@@ -1,48 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
   View,
   SafeAreaView,
   TouchableOpacity,
+  Animated,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
-const renderWaterButton = (amount, value, setValue, operation = "add") => {
-  return (
-    <TouchableOpacity
-      style={{ alignItems: "center", padding: 5 }}
-      onPress={() => {
-        operation == "add"
-          ? setValue(value + amount)
-          : value - amount < 0
-          ? setValue(0)
-          : setValue(value - amount);
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: operation == "add" ? "#1ca3ec" : "red",
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <MaterialCommunityIcons name="bottle-soda" size={24} color="white" />
-      </View>
-      <Text style={{ color: "#5a595b", fontWeight: "600" }}>{amount} mL</Text>
-    </TouchableOpacity>
-  );
-};
+import { Ionicons } from "@expo/vector-icons";
+import ConfettiCannon from "react-native-confetti-cannon";
+import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
+
+const renderConfetti = () => {
+  return <ConfettiCannon count={200} origin={{ x: 0, y: 0 }} fadeOut={true} />;
+};
 
 export default function App() {
   const [fillingPercentage, setFillingPercentage] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3000);
   const [waterDrank, setWaterDrank] = useState(0);
+  const [isGoalAchieved, setIsGoalAchieved] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  // Progress Bar Animation
+  const barHeight = useRef(new Animated.Value(0)).current;
+  const progressPercent = barHeight.interpolate({
+    inputRange: [0, 100],
+    outputRange: ["0%", `100%`],
+  });
+
+  useEffect(() => {
+    Animated.timing(barHeight, {
+      duration: 1000,
+      toValue: fillingPercentage / 3,
+      useNativeDriver: false,
+    }).start();
+  }, [fillingPercentage]);
+
+  // End of Progress Bar Animation
 
   useEffect(() => {
     // percentage = waterDrank * 100 / waterGoal
@@ -51,8 +47,24 @@ export default function App() {
     setFillingPercentage(fillingP > 300 ? 300 : fillingP);
   }, [waterGoal, setFillingPercentage, waterDrank]);
 
+  useEffect(() => {
+    if (waterDrank >= waterGoal && isGoalAchieved === false) {
+      setIsGoalAchieved(true);
+    }
+    if (waterDrank < waterGoal && isGoalAchieved === true) {
+      setIsGoalAchieved(false);
+    }
+
+    if (showConfetti === false && isGoalAchieved === true) {
+      setShowConfetti(true);
+    } else {
+      setShowConfetti(false);
+    }
+  }, [waterDrank, isGoalAchieved, waterGoal]);
+
   return (
     <SafeAreaView style={styles.container}>
+      {showConfetti && renderConfetti()}
       {/* Water Goal */}
       <View style={styles.waterGoalContainer}>
         <Text style={[styles.blueText, { fontSize: 22 }]}>Your Goal</Text>
@@ -97,9 +109,9 @@ export default function App() {
 
         {/* Progress Bar */}
         <View style={styles.progressBarContainer}>
-          <View
+          <Animated.View
             style={{
-              height: fillingPercentage,
+              height: progressPercent,
               backgroundColor: "#5abcd8",
               borderRadius: 40,
             }}
@@ -110,14 +122,28 @@ export default function App() {
       {/* Add Water */}
       <View style={styles.waterButtonsContainer}>
         {amounts.map((amount) => {
-          return renderWaterButton(amount, waterDrank, setWaterDrank);
+          return (
+            <AddRemoveButton
+              amount={amount}
+              value={waterDrank}
+              setValue={setWaterDrank}
+              operation="add"
+            />
+          );
         })}
       </View>
 
       {/* Remove Water */}
       <View style={styles.waterButtonsContainer}>
         {amounts.map((amount) => {
-          return renderWaterButton(amount, waterDrank, setWaterDrank, "remove");
+          return (
+            <AddRemoveButton
+              amount={amount}
+              value={waterDrank}
+              setValue={setWaterDrank}
+              operation="remove"
+            />
+          );
         })}
       </View>
     </SafeAreaView>
