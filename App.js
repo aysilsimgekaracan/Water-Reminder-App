@@ -7,36 +7,8 @@ import {
   TouchableOpacity,
   Animated,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
-const renderWaterButton = (amount, value, setValue, operation = "add") => {
-  return (
-    <TouchableOpacity
-      style={{ alignItems: "center", padding: 5 }}
-      onPress={() => {
-        operation == "add"
-          ? setValue(value + amount)
-          : value - amount < 0
-          ? setValue(0)
-          : setValue(value - amount);
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: operation == "add" ? "#1ca3ec" : "red",
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <MaterialCommunityIcons name="bottle-soda" size={24} color="white" />
-      </View>
-      <Text style={{ color: "#5a595b", fontWeight: "600" }}>{amount} mL</Text>
-    </TouchableOpacity>
-  );
-};
+import { Ionicons } from "@expo/vector-icons";
+import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
 
@@ -45,6 +17,7 @@ export default function App() {
   const [waterGoal, setWaterGoal] = useState(3000);
   const [waterDrank, setWaterDrank] = useState(0);
 
+  // Progress Bar Animation
   const barHeight = useRef(new Animated.Value(0)).current;
   const progressPercent = barHeight.interpolate({
     inputRange: [0, 100],
@@ -52,6 +25,7 @@ export default function App() {
   });
 
   useEffect(() => {
+    console.log("called");
     Animated.timing(barHeight, {
       duration: 1000,
       toValue: fillingPercentage / 3,
@@ -125,14 +99,28 @@ export default function App() {
       {/* Add Water */}
       <View style={styles.waterButtonsContainer}>
         {amounts.map((amount) => {
-          return renderWaterButton(amount, waterDrank, setWaterDrank);
+          return (
+            <AddRemoveButton
+              amount={amount}
+              value={waterDrank}
+              setValue={setWaterDrank}
+              operation="add"
+            />
+          );
         })}
       </View>
 
       {/* Remove Water */}
       <View style={styles.waterButtonsContainer}>
         {amounts.map((amount) => {
-          return renderWaterButton(amount, waterDrank, setWaterDrank, "remove");
+          return (
+            <AddRemoveButton
+              amount={amount}
+              value={waterDrank}
+              setValue={setWaterDrank}
+              operation="remove"
+            />
+          );
         })}
       </View>
     </SafeAreaView>
