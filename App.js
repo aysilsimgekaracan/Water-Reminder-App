@@ -9,9 +9,31 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ConfettiCannon from "react-native-confetti-cannon";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
+
+// Async Storage
+const storeData = async (value, key = "@amount") => {
+  try {
+    await AsyncStorage.setItem(key, value);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getData = async (key, setValue) => {
+  try {
+    const value = await AsyncStorage.getItem(key);
+    if (value !== null) {
+      setValue(Number(value));
+      console.log(value);
+    }
+  } catch (e) {
+    // error reading value
+  }
+};
 
 const renderConfetti = () => {
   return <ConfettiCannon count={200} origin={{ x: 0, y: 0 }} fadeOut={true} />;
@@ -23,12 +45,18 @@ export default function App() {
   const [waterDrank, setWaterDrank] = useState(0);
   const [isGoalAchieved, setIsGoalAchieved] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+
   // Progress Bar Animation
   const barHeight = useRef(new Animated.Value(0)).current;
   const progressPercent = barHeight.interpolate({
     inputRange: [0, 100],
     outputRange: ["0%", `100%`],
   });
+
+  useEffect(() => {
+    getData("@amount", setWaterDrank);
+    getData("@goal", setWaterGoal);
+  }, []);
 
   useEffect(() => {
     Animated.timing(barHeight, {
@@ -39,6 +67,14 @@ export default function App() {
   }, [fillingPercentage]);
 
   // End of Progress Bar Animation
+
+  useEffect(() => {
+    storeData(waterGoal.toString(), "@goal");
+  }, [waterGoal]);
+
+  useEffect(() => {
+    storeData(waterDrank.toString(), "@amount");
+  }, [waterDrank]);
 
   useEffect(() => {
     // percentage = waterDrank * 100 / waterGoal
