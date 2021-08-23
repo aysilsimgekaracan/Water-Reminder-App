@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
   View,
   SafeAreaView,
   TouchableOpacity,
+  Animated,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -43,6 +44,20 @@ export default function App() {
   const [fillingPercentage, setFillingPercentage] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3000);
   const [waterDrank, setWaterDrank] = useState(0);
+
+  const barHeight = useRef(new Animated.Value(0)).current;
+  const progressPercent = barHeight.interpolate({
+    inputRange: [0, 100],
+    outputRange: ["0%", `100%`],
+  });
+
+  useEffect(() => {
+    Animated.timing(barHeight, {
+      duration: 1000,
+      toValue: fillingPercentage / 3,
+      useNativeDriver: false,
+    }).start();
+  }, [fillingPercentage]);
 
   useEffect(() => {
     // percentage = waterDrank * 100 / waterGoal
@@ -97,9 +112,9 @@ export default function App() {
 
         {/* Progress Bar */}
         <View style={styles.progressBarContainer}>
-          <View
+          <Animated.View
             style={{
-              height: fillingPercentage,
+              height: progressPercent,
               backgroundColor: "#5abcd8",
               borderRadius: 40,
             }}
