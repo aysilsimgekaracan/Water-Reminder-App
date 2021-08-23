@@ -8,15 +8,21 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import ConfettiCannon from "react-native-confetti-cannon";
 import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
+
+const renderConfetti = () => {
+  return <ConfettiCannon count={200} origin={{ x: 0, y: 0 }} fadeOut={true} />;
+};
 
 export default function App() {
   const [fillingPercentage, setFillingPercentage] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3000);
   const [waterDrank, setWaterDrank] = useState(0);
-
+  const [isGoalAchieved, setIsGoalAchieved] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   // Progress Bar Animation
   const barHeight = useRef(new Animated.Value(0)).current;
   const progressPercent = barHeight.interpolate({
@@ -25,13 +31,14 @@ export default function App() {
   });
 
   useEffect(() => {
-    console.log("called");
     Animated.timing(barHeight, {
       duration: 1000,
       toValue: fillingPercentage / 3,
       useNativeDriver: false,
     }).start();
   }, [fillingPercentage]);
+
+  // End of Progress Bar Animation
 
   useEffect(() => {
     // percentage = waterDrank * 100 / waterGoal
@@ -40,8 +47,24 @@ export default function App() {
     setFillingPercentage(fillingP > 300 ? 300 : fillingP);
   }, [waterGoal, setFillingPercentage, waterDrank]);
 
+  useEffect(() => {
+    if (waterDrank >= waterGoal && isGoalAchieved === false) {
+      setIsGoalAchieved(true);
+    }
+    if (waterDrank < waterGoal && isGoalAchieved === true) {
+      setIsGoalAchieved(false);
+    }
+
+    if (showConfetti === false && isGoalAchieved === true) {
+      setShowConfetti(true);
+    } else {
+      setShowConfetti(false);
+    }
+  }, [waterDrank, isGoalAchieved, waterGoal]);
+
   return (
     <SafeAreaView style={styles.container}>
+      {showConfetti && renderConfetti()}
       {/* Water Goal */}
       <View style={styles.waterGoalContainer}>
         <Text style={[styles.blueText, { fontSize: 22 }]}>Your Goal</Text>
