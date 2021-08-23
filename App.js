@@ -28,10 +28,10 @@ const getData = async (key, setValue) => {
     const value = await AsyncStorage.getItem(key);
     if (value !== null) {
       setValue(Number(value));
-      console.log(value);
     }
   } catch (e) {
     // error reading value
+    console.log(e);
   }
 };
 
