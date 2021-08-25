@@ -192,6 +192,7 @@ export default function App() {
         {amounts.map((amount) => {
           return (
             <AddRemoveButton
+              key={"add" + amount}
               amount={amount}
               value={waterDrank}
               setValue={setWaterDrank}
@@ -206,6 +207,7 @@ export default function App() {
         {amounts.map((amount) => {
           return (
             <AddRemoveButton
+              key={"remove" + amount}
               amount={amount}
               value={waterDrank}
               setValue={setWaterDrank}
