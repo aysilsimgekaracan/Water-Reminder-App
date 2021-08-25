@@ -6,13 +6,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Animated,
-  Button,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ConfettiCannon from "react-native-confetti-cannon";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { Permissions } from "expo";
 import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
@@ -43,16 +41,6 @@ const renderConfetti = () => {
 };
 
 // Notifications
-
-const askPermission = async () => {
-  const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-  if (status === "granted") {
-    console.log("Notification permissions granted.");
-    return true;
-  } else {
-    return false;
-  }
-};
 
 async function scheduleNotification() {
   await Notifications.requestPermissionsAsync().then((permission) => {
@@ -86,8 +74,6 @@ export default function App() {
   useEffect(() => {
     getData("@amount", setWaterDrank);
     getData("@goal", setWaterGoal);
-
-    askPermission();
   }, []);
 
   useEffect(() => {
