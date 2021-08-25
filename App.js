@@ -152,9 +152,9 @@ export default function App() {
           justifyContent: "space-around",
         }}
       >
-        {/* Water You've Drank Label */}
+        {/* Water You've Drunk Label */}
         <View style={{ justifyContent: "center" }}>
-          <Text style={[styles.grayText, { fontSize: 28 }]}>You've drank</Text>
+          <Text style={[styles.grayText, { fontSize: 28 }]}>You've drunk</Text>
           <Text style={[styles.blueText, { fontSize: 42 }]}>
             {waterDrank} mL
           </Text>
