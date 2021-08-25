@@ -6,10 +6,13 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Animated,
+  Button,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ConfettiCannon from "react-native-confetti-cannon";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+import { Permissions } from "expo";
 import { AddRemoveButton } from "./components/AddRemoveButton";
 
 const amounts = [250, 500, 1000, 1500];
@@ -28,16 +31,43 @@ const getData = async (key, setValue) => {
     const value = await AsyncStorage.getItem(key);
     if (value !== null) {
       setValue(Number(value));
-      console.log(value);
     }
   } catch (e) {
     // error reading value
+    console.log(e);
   }
 };
 
 const renderConfetti = () => {
   return <ConfettiCannon count={200} origin={{ x: 0, y: 0 }} fadeOut={true} />;
 };
+
+// Notifications
+
+const askPermission = async () => {
+  const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+  if (status === "granted") {
+    console.log("Notification permissions granted.");
+    return true;
+  } else {
+    return false;
+  }
+};
+
+async function scheduleNotification() {
+  await Notifications.requestPermissionsAsync().then((permission) => {
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: "💧 Water Reminder",
+        subtitle: "Your body needs water!",
+      },
+      trigger: {
+        repeats: true,
+        seconds: 60,
+      },
+    });
+  });
+}
 
 export default function App() {
   const [fillingPercentage, setFillingPercentage] = useState(0);
@@ -56,6 +86,8 @@ export default function App() {
   useEffect(() => {
     getData("@amount", setWaterDrank);
     getData("@goal", setWaterGoal);
+
+    askPermission();
   }, []);
 
   useEffect(() => {
@@ -182,6 +214,38 @@ export default function App() {
           );
         })}
       </View>
+      <View
+        style={{
+          paddingVertical: 20,
+          flexDirection: "row",
+          width: "90%",
+          justifyContent: "space-between",
+        }}
+      >
+        <TouchableOpacity
+          style={[
+            styles.notificationButton,
+            {
+              backgroundColor: "#74ccf4",
+            },
+          ]}
+          onPress={() => scheduleNotification()}
+        >
+          <Text style={styles.notificationText}>Schedule Notification</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.notificationButton,
+            {
+              backgroundColor: "red",
+            },
+          ]}
+          onPress={() => Notifications.cancelAllScheduledNotificationsAsync()}
+        >
+          <Text style={styles.notificationText}>Cancel Notifications</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -214,4 +278,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   grayText: { color: "#323033", fontWeight: "600" },
+  notificationButton: {
+    height: 50,
+    borderRadius: 20,
+    justifyContent: "center",
+    padding: 7,
+  },
+  notificationText: { color: "white", fontWeight: "500", fontSize: 16 },
 });
